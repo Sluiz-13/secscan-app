@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  password        String
+  createdAt       DateTime @default(now())
+  termsAcceptedAt DateTime
+  domains         Domain[]
+}
+
+model Domain {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  domain        String
+  consentGiven  Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  scans         Scan[]
+}
+
+model Scan {
+  id          String       @id @default(uuid())
+  domainId    String
+  domain      Domain       @relation(fields: [domainId], references: [id])
+  status      String       @default("pending")
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  results     ScanResult[]
+}
+
+model ScanResult {
+  id          String   @id @default(uuid())
+  scanId      String
+  scan        Scan     @relation(fields: [scanId], references: [id])
+  checkType   String
+  severity    String
+  description String
+  createdAt   DateTime @default(now())
+}
